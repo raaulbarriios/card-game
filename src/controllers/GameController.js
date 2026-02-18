@@ -1,7 +1,6 @@
 import { GameDatabase } from '../database/GameDatabase.js';
 import { CardView } from '../views/CardView.js';
 import { ShopView } from '../views/ShopView.js';
-import { CardType } from '../types/CardType.js';
 import { PrestigeLevels, CardTypes } from '../data/GameData.js';
 import { formatMoney } from '../utils/Formatter.js';
 import { FXView } from '../views/FXView.js';
@@ -13,7 +12,7 @@ export class GameController {
         // Game State
         this.money = 0;
         this.cards = []; // Array of { instanceId, typeId, x, y }
-        this.prestigeTier = 0; // 0=Jeffrey, 1=Maestro, etc.
+        this.prestigeTier = 0; // 0=Novice, 1=Maestro, etc.
         
         // Prestige Definitions
         this.prestigeLevels = PrestigeLevels;
@@ -67,6 +66,19 @@ export class GameController {
         return this.currentPrestige.multiplier;
     }
 
+    getCardCount(typeId) {
+        return this.cards.filter(c => c.typeId === typeId).length;
+    }
+
+    getCardCost(typeId) {
+        const type = this.cardTypes.find(t => t.id === typeId);
+        if (!type) return 0;
+        const count = this.getCardCount(typeId);
+        // Cost Formula: Base * (1.15 ^ count)
+        // This ensures the game gets harder as you buy more of the same unit
+        return type.baseCost * Math.pow(1.15, count);
+    }
+
 
 
     // --- Core ---
@@ -80,7 +92,7 @@ export class GameController {
         // Cheat Key (º) - Set Money
         window.addEventListener('keydown', (e) => {
             if (e.key === 'º') {
-                const input = prompt("CHEAT: Set Money Amount:", this.money);
+                const input = prompt("TRUCO: Establecer cantidad de dinero:", this.money);
                 if (input !== null) {
                     const amount = parseFloat(input);
                     if (!isNaN(amount)) {
@@ -115,16 +127,16 @@ export class GameController {
         if (!next) return;
 
         if (this.money >= next.targetMoney) {
-             if (confirm(`ASCEND TO ${next.nextTierName}? \n\nExisting cards and money will be lost.\nGain ${next.multiplier}x multiplier!`)) {
+             if (confirm(`¿ASCENDER A ${next.nextTierName}? \n\nPerderás todas las cartas y el dinero actual.\n¡Ganarás un multiplicador de x${next.multiplier}!`)) {
                 this.doPrestige();
             }
         } else {
-             alert(`You need $${formatMoney(next.targetMoney)} to ascend!`);
+             alert(`¡Necesitas $${formatMoney(next.targetMoney)} para ascender!`);
         }
     }
 
     attemptReset() {
-         if(confirm('HARD RESET? This wipes everything including Prestige. Are you sure?')) {
+         if(confirm('¿REINICIO TOTAL? Esto borrará todo, incluido el Prestigio. ¿Estás seguro?')) {
             this.isResetting = true;
             this.db.reset();
             location.reload();
@@ -139,11 +151,8 @@ export class GameController {
             this.nextInstanceId = saved.nextInstanceId || 1;
             this.prestigeTier = saved.prestigeTier || 0;
             
-            // Re-instantiate views
+            // Re-instantiate views (Necessary to SEE your saved cards)
             this.cards.forEach(cardModel => {
-                // Migration: novice -> jeffrey
-                if (cardModel.typeId === 'novice') cardModel.typeId = 'jeffrey';
-                
                 this.createCardView(cardModel);
             });
         }
@@ -200,8 +209,9 @@ export class GameController {
     }
 
     buyCard(type) {
-        if (this.money >= type.baseCost) {
-            this.money -= type.baseCost;
+        const cost = this.getCardCost(type.id);
+        if (this.money >= cost) {
+            this.money -= cost;
             
             const newCard = {
                 instanceId: this.nextInstanceId++,
@@ -300,7 +310,7 @@ export class GameController {
         // Create a display-ready list for the shop
         const shopList = this.cardTypes.map(t => ({
             ...t,
-            displayCost: formatMoney(t.baseCost),
+            displayCost: formatMoney(this.getCardCost(t.id)),
             displayEarn: formatMoney(t.clickValue * this.totalMultiplier)
         }));
         
@@ -316,7 +326,7 @@ export class GameController {
 
     updatePrestigeUI() {
         const tier = this.currentPrestige;
-        this.prestigeInfoEl.textContent = `Tier: ${tier.name} (x${formatMoney(tier.multiplier)})`;
+        this.prestigeInfoEl.textContent = `Nivel: ${tier.name} (x${formatMoney(tier.multiplier)})`;
         
         // Button Logic is now handled by ShopView.renderPrestige
     }

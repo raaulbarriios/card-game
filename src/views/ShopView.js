@@ -50,7 +50,7 @@ export class ShopView {
                         <strong>${type.name}</strong><br>
                         <small class="earn-display"></small>
                     </div>
-                    <button class="shop-btn">Buy</button>
+                    <button class="shop-btn">Comprar</button>
                 `;
                 const btn = item.querySelector('button');
                 btn.addEventListener('click', () => this.onBuy(type));
@@ -68,8 +68,8 @@ export class ShopView {
             const earn = item.querySelector('.earn-display');
             
             // Update Text
-            earn.textContent = `Earns: $${type.displayEarn || '?'}/click`;
-            btn.textContent = `Buy ($${(type.displayCost || type.baseCost)})`;
+            earn.textContent = `Genera: $${type.displayEarn || '?'}/clic`;
+            btn.textContent = `Comprar ($${(type.displayCost || type.baseCost)})`;
             btn.disabled = !canAfford;
         });
     }
@@ -83,7 +83,7 @@ export class ShopView {
                 item.classList.add('prestige-item');
                 item.innerHTML = `
                     <h4>${level.name} <span class="status-text"></span></h4>
-                    <div class="prestige-bonus">Multiplier: x${level.multiplier.toLocaleString()}</div>
+                    <div class="prestige-bonus">Multiplicador: x${level.multiplier.toLocaleString()}</div>
                     <div class="prestige-cost-container"></div>
                     <div class="action-container"></div>
                 `;
@@ -93,7 +93,7 @@ export class ShopView {
             const resetDiv = document.createElement('div');
             resetDiv.style.marginTop = '20px';
             resetDiv.style.textAlign = 'center';
-            resetDiv.innerHTML = `<button class="btn warning small">Hard Reset Game</button>`;
+            resetDiv.innerHTML = `<button class="btn warning small">Reiniciar Juego (Hard Reset)</button>`;
             resetDiv.querySelector('button').addEventListener('click', () => this.onReset());
             this.prestigeContainer.appendChild(resetDiv);
         }
@@ -113,17 +113,17 @@ export class ShopView {
             else item.style.borderColor = '#ffd700';
 
             let statusText = '';
-            if (index === currentTier) statusText = '(Active)';
-            else if (index < currentTier) statusText = '(Passed)';
-            else if (isNext) statusText = '(Next Goal)';
-            else statusText = '(Locked)';
+            if (index === currentTier) statusText = '(Activo)';
+            else if (index < currentTier) statusText = '(Superado)';
+            else if (isNext) statusText = '(Siguiente Meta)';
+            else statusText = '(Bloqueado)';
             
             item.querySelector('.status-text').textContent = statusText;
             
             // Goal Logic
             const costContainer = item.querySelector('.prestige-cost-container');
             if (index > 0) {
-               costContainer.innerHTML = `<div class="prestige-cost">Goal: ${levels[index-1].targetMoney.toLocaleString(undefined, {notation:"compact"})}</div>`;
+               costContainer.innerHTML = `<div class="prestige-cost">Meta: ${levels[index-1].targetMoney.toLocaleString(undefined, {notation:"compact"})}</div>`;
             } else {
                costContainer.innerHTML = '';
             }
@@ -134,7 +134,7 @@ export class ShopView {
                  if (!actionContainer.querySelector('button')) {
                       const btn = document.createElement('button');
                       btn.className = 'btn prestige-action';
-                      btn.textContent = 'ASCEND';
+                      btn.textContent = 'ASCENDER';
                       btn.addEventListener('click', () => this.onPrestige());
                       actionContainer.appendChild(btn);
                  }
