@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card Clicker Tycoon</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="hud-bar">
+        <div class="money-display">
+          <span>💰 Money:</span>
+          <span id="money-value">0</span>
+        </div>
+        <div class="hud-controls">
+          <div id="prestige-display" class="prestige-info">Tier: Jeffrey (x1)</div>
+        </div>
+      </header>
+
+      <main id="game-board" class="board">
+        <!-- Cards will be dropped here -->
+      </main>
+
+      <aside id="shop-panel" class="shop">
+        <div id="shop-handle" class="shop-handle">
+          <span>&lt;</span> 
+        </div>
+        
+        <div class="shop-tabs">
+          <button id="tab-cards" class="shop-tab active">Cards</button>
+          <button id="tab-prestige" class="shop-tab">Prestige</button>
+        </div>
+
+        <!-- Cards Tab -->
+        <div id="shop-content-cards" class="shop-content active">
+            <div id="shop-items" class="shop-slider">
+              <!-- Shop items will be generated here -->
+            </div>
+        </div>
+
+        <!-- Prestige Tab -->
+        <div id="shop-content-prestige" class="shop-content" style="display:none;">
+            <div id="prestige-list" class="prestige-list shop-slider">
+              <!-- Prestige items will be generated here -->
+            </div>
+        </div>
+
+
+      </aside>
+    </div>
+    <script type="module" src="./src/main.js"></script>
+  </body>
+</html>

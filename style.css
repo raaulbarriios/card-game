@@ -1,0 +1,402 @@
+:root {
+  --bg-color: #1a1a2e;
+  --board-color: #16213e;
+  --accent-color: #0f3460;
+  --highlight-color: #e94560;
+  --text-color: #f1f1f1;
+  --card-bg: #fff;
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none; /* Prevent text selection during drag */
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  height: 100vh;
+  overflow: hidden;
+}
+
+#app {
+  display: grid;
+  grid-template-rows: 60px 1fr;
+  grid-template-columns: 1fr;
+  height: 100%;
+}
+
+/* HUD */
+.hud-bar {
+  grid-column: 1 / -1;
+  background: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  box-shadow: var(--shadow);
+  z-index: 10;
+}
+
+.hud-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.money-display {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: transform 0.1s;
+}
+
+.btn:active {
+  transform: scale(0.95);
+}
+
+.btn.warning {
+  background-color: #ff4757;
+  color: white;
+}
+
+.btn.prestige {
+  background-color: #ffd700;
+  color: #333;
+  box-shadow: 0 0 10px #ffd700;
+  animation: pulse-gold 2s infinite;
+}
+
+@keyframes pulse-gold {
+  0% { box-shadow: 0 0 10px #ffd700; }
+  50% { box-shadow: 0 0 20px #ffed4a; }
+  100% { box-shadow: 0 0 10px #ffd700; }
+}
+
+/* Board */
+.board {
+  background-color: var(--board-color);
+  position: relative;
+  overflow: hidden; /* Cards stay inside */
+  background-image: radial-gradient(var(--glass-border) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Shop */
+.shop {
+  position: fixed;
+  top: 60px; /* Below HUD */
+  right: 0;
+  bottom: 0;
+  height: calc(100vh - 60px); /* Explicit height */
+  max-height: calc(100vh - 60px); 
+  width: 300px;
+  background: rgba(26, 26, 46, 0.95); /* Darker, less transparent for readability */
+  backdrop-filter: blur(10px);
+  border-left: 1px solid var(--glass-border);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  /* overflow: visible is needed for the handle to stick out. 
+     We rely on shop-content to manage overflow of items. */
+  overflow: visible; 
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 100;
+  box-shadow: -5px 0 15px rgba(0,0,0,0.5);
+}
+
+.shop.open {
+  transform: translateX(0);
+}
+
+.shop-handle {
+  position: absolute;
+  top: 50%;
+  left: -20px; /* Width of handle */
+  width: 20px;
+  height: 100px;
+  background: var(--accent-color);
+  border-radius: 10px 0 0 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transform: translateY(-50%);
+  box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  transition: background 0.2s;
+}
+
+.shop-handle:hover {
+  background: var(--highlight-color);
+}
+
+/* Rotate arrow when open */
+.shop.open .shop-handle span {
+  transform: rotate(180deg);
+  display: inline-block;
+}
+
+.shop h2 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.shop-content {
+  display: none;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden; /* Contain inner scroll */
+}
+
+.shop-content.active {
+  display: flex;
+}
+
+.shop-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.shop-tabs {
+  display: flex;
+  gap: 10px;
+  border-bottom: 2px solid var(--glass-border);
+  padding-bottom: 10px;
+}
+
+.shop-tab {
+  background: transparent;
+  border: none;
+  color: #888;
+  font-weight: bold;
+  cursor: pointer;
+  padding: 5px 10px;
+  transition: color 0.2s;
+}
+
+.shop-tab.active {
+  color: var(--highlight-color);
+  border-bottom: 2px solid var(--highlight-color);
+}
+
+/* Shop Slider (Vertical) */
+.shop-slider {
+  display: flex;
+  flex-direction: column; /* Vertical */
+  overflow-y: auto;
+  overflow-y: auto;
+  gap: 15px;
+  padding-bottom: 50px; /* Extra padding for bottom visibility */
+  scroll-behavior: smooth;
+  flex: 1; /* Grow to fill space */
+  min-height: 0; /* Crucial for scrolling inside flex */
+  overflow-x: hidden; /* Prevent horizontal scroll */
+  padding-right: 15px; /* Separate scrollbar from items */
+}
+
+/* Custom Scrollbar for slider */
+.shop-slider::-webkit-scrollbar {
+  width: 8px; /* Width for vertical scrollbar */
+}
+.shop-slider::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+.shop-slider::-webkit-scrollbar-thumb {
+  background: var(--highlight-color);
+  border-radius: 4px;
+}
+
+.shop-item {
+  width: 100%; /* Full width */
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center; 
+  flex-direction: row; 
+  flex-wrap: wrap; /* Allow wrapping if needed */
+  justify-content: space-between;
+  gap: 10px;
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
+}
+
+.shop-item img {
+  width: 60px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  background: #333;
+}
+
+.shop-item > div {
+  flex: 1; /* Text takes remaining space */
+  min-width: 80px; /* Ensure text doesn't collapse too much */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+.shop-item:hover {
+  border-color: var(--highlight-color);
+}
+
+
+
+.shop-btn {
+  width: 100%;
+  background-color: var(--highlight-color);
+  color: white;
+  padding: 6px 10px; /* Merged from previous rule */
+  border: none;
+  border-radius: 4px; /* Default btn style */
+  font-weight: bold;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+
+.shop-btn:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+/* Prestige List */
+.prestige-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.prestige-item {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid #ffd700;
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.prestige-item.locked {
+  background: rgba(0, 0, 0, 0.3);
+  border-color: #555;
+  opacity: 0.7;
+}
+
+.prestige-item h4 {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+.prestige-cost {
+  color: #ff4757;
+  font-size: 0.9rem;
+}
+
+.prestige-bonus {
+  color: #2ed573;
+  font-size: 0.9rem;
+}
+
+/* Cards on Board */
+.card {
+  width: 180px;
+  height: 252px;
+  background-color: transparent; /* No background */
+  border-radius: 12px;
+  position: absolute;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+  cursor: grab;
+  /* Remove flex layout that constrained padding */
+  padding: 0;
+  transition:
+    transform 0.1s,
+    box-shadow 0.1s;
+  touch-action: none;
+  overflow: hidden; /* Ensure image clips */
+}
+
+.card:active {
+  cursor: grabbing;
+  transform: scale(1.05);
+  z-index: 1000 !important;
+}
+
+.card img {
+  width: 100%;
+  height: 100%; /* Fill card */
+  object-fit: cover;
+  border-radius: 12px; /* Match card */
+  pointer-events: none; /* Prevent image dragging interfering */
+  display: block; /* Remove inline gap */
+}
+
+.card-info {
+  display: none; /* Only show image */
+}
+
+/* Animations */
+@keyframes pop-money {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-50px) scale(1.5);
+    opacity: 0;
+  }
+}
+
+.money-popup {
+  position: absolute;
+  color: #ffd700;
+  font-weight: bold;
+  font-size: 1.2rem;
+  pointer-events: none;
+  animation: pop-money 0.8s ease-out forwards;
+  z-index: 2000;
+}
+
+.custom-image-section {
+  margin-top: auto;
+  padding-top: 20px;
+  border-top: 1px solid var(--glass-border);
+}
+
+.custom-image-section input {
+  width: 100%;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--glass-border);
+  color: white;
+  border-radius: 4px;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: #aaa;
+  margin-top: 5px;
+}
