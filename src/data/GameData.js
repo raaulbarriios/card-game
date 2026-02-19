@@ -3,15 +3,6 @@ import { CardType } from '../types/CardType.js';
 // SI Units helper
 const K=1e3, M=1e6, B=1e9, T=1e12, P=1e15, E=1e18, Z=1e21, Y=1e24;
 
-export const PrestigeLevels = [
-    { name: "Jeffrey", multiplier: 1, targetMoney: 50_000_000, nextTierName: "Maestro" },
-    { name: "Maestro", multiplier: 10, targetMoney: 5 * T, nextTierName: "Épico" },
-    { name: "Épico", multiplier: 100, targetMoney: 10 * P, nextTierName: "Divino" },
-    { name: "Divino", multiplier: 5000, targetMoney: 500 * E, nextTierName: "Astral" },
-    { name: "Astral", multiplier: 1_000_000, targetMoney: 100 * Y, nextTierName: "Origen" },
-    { name: "Origen", multiplier: 1e12, targetMoney: Infinity, nextTierName: "MAX" }
-];
-
 export const CardTypes = [
     // Tier 1-6
     new CardType('jeffrey', 'Jeffrey The Epstein', 10, 1, 'src/img/Jeffrey.png'),
@@ -41,3 +32,36 @@ export const CardTypes = [
     new CardType('infinity', 'Infinity', 1*M*Y, 90*K*Y, 'https://placehold.co/100x140/yellow/black?text=Infinity'),
     new CardType('source', 'The Source', 1*B*Y, 10*M*Y, 'https://placehold.co/100x140/rainbow/black?text=Source'),
 ];
+
+const ArrowUpgrades = [
+    { id: 'arrow', level: 1, name: "Bola Rebotadora", cost: 1000, speed: 200, description: "Desbloquea una bola que rebota y hace clic por ti." },
+    { id: 'arrow', level: 2, name: "Bola Veloz I", cost: 5000, speed: 300, description: "Aumenta la velocidad de la bola." },
+    { id: 'arrow', level: 3, name: "Bola Veloz II", cost: 25000, speed: 450, description: "¡Más rápido!" },
+    { id: 'arrow', level: 4, name: "Bola Sónica", cost: 100_000, speed: 700, description: "La bola se mueve a velocidades increíbles." },
+    { id: 'arrow', level: 5, name: "Bola Hiper", cost: 1_000_000, speed: 1200, description: "¡Casi no se puede ver!" },
+    { id: 'arrow', level: 6, name: "Bola Cuántica", cost: 50_000_000, speed: 2500, description: "Está en todas partes a la vez." },
+    { id: 'arrow', level: 7, name: "Bola Divina", cost: 10*B, speed: 5000, description: "Velocidad divina." }
+];
+
+const ClickUpgrades = [
+    { id: 'click', level: 1, name: "Guantes de Poder", cost: 50_000, power: 2, description: "Tus clics valen x2." },
+    { id: 'click', level: 2, name: "Martillo Digital", cost: 250_000, power: 5, description: "Tus clics valen x5." },
+    { id: 'click', level: 3, name: "Click Sónico", cost: 1_000_000, power: 10, description: "Tus clics valen x10." },
+    { id: 'click', level: 4, name: "Dedo de Midas", cost: 5_000_000, power: 25, description: "Tus clics valen x25." },
+    { id: 'click', level: 5, name: "Click Divino", cost: 100_000_000, power: 100, description: "Tus clics valen x100." }
+];
+
+const BallSizeUpgrades = [
+    { id: 'ballSize', level: 1, name: "Bola Grande", cost: 15_000, size: 60, description: "Aumenta el tamaño de la bola." },
+    { id: 'ballSize', level: 2, name: "Bola Gigante", cost: 100_000, size: 80, description: "¡Más grande es mejor!" },
+    { id: 'ballSize', level: 3, name: "Bola Colosal", cost: 500_000, size: 120, description: "Golpea más cartas a la vez." },
+    { id: 'ballSize', level: 4, name: "Sol en Miniatura", cost: 5*M, size: 200, description: "Ocupa gran parte de la pantalla." }
+];
+
+export const Upgrades = {
+    arrow: ArrowUpgrades,
+    click: ClickUpgrades,
+    ballSize: BallSizeUpgrades
+};
+// Export ArrowUpgrades separately ONLY if legacy code needs it, otherwise remove or keeping for safety during refactor
+export { ArrowUpgrades };

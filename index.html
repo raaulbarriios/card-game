@@ -14,9 +14,12 @@
           <span id="money-value">0</span>
         </div>
         <div class="hud-controls">
-          <div id="prestige-display" class="prestige-info">Nivel: Jeffrey (x1)</div>
+          <!-- Prestige Display Removed -->
         </div>
       </header>
+      
+      <!-- Permanent Reset Button -->
+      <button id="hard-reset-btn" class="reset-btn" title="Reiniciar Juego Totalmente">🔄</button>
 
       <main id="game-board" class="board">
         <!-- Cards will be dropped here -->
@@ -29,7 +32,7 @@
         
         <div class="shop-tabs">
           <button id="tab-cards" class="shop-tab active">Cartas</button>
-          <button id="tab-prestige" class="shop-tab">Prestigio</button>
+          <button id="tab-upgrades" class="shop-tab">Mejoras</button>
         </div>
 
         <!-- Cards Tab -->
@@ -39,12 +42,14 @@
             </div>
         </div>
 
-        <!-- Prestige Tab -->
-        <div id="shop-content-prestige" class="shop-content" style="display:none;">
-            <div id="prestige-list" class="prestige-list shop-slider">
-              <!-- Prestige items will be generated here -->
+        <!-- Upgrades Tab -->
+        <div id="shop-content-upgrades" class="shop-content" style="display:none;">
+            <div id="upgrades-list" class="shop-slider">
+              <!-- Upgrades will be generated here -->
             </div>
         </div>
+
+        <!-- Prestige Tab Removed -->
 
 
       </aside>

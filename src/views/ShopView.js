@@ -2,39 +2,40 @@
  * Manages the Shop UI.
  */
 export class ShopView {
-    constructor(containerIds, onBuyCallback, onPrestigeCallback, onResetCallback) {
+    constructor(containerIds, onBuyCallback, onBuyUpgradeCallback) {
         this.cardsContainer = document.getElementById('shop-items');
-        this.prestigeContainer = document.getElementById('prestige-list');
+        this.upgradesContainer = document.getElementById('upgrades-list');
         
         this.onBuy = onBuyCallback;
-        this.onPrestige = onPrestigeCallback;
-        this.onReset = onResetCallback;
+        this.onBuyUpgrade = onBuyUpgradeCallback;
     }
 
     initTabs() {
         const tabCards = document.getElementById('tab-cards');
-        const tabPrestige = document.getElementById('tab-prestige');
+        const tabUpgrades = document.getElementById('tab-upgrades');
+        
         const contentCards = document.getElementById('shop-content-cards');
-        const contentPrestige = document.getElementById('shop-content-prestige');
+        const contentUpgrades = document.getElementById('shop-content-upgrades');
 
-        tabCards.addEventListener('click', () => {
-            tabCards.classList.add('active');
-            tabPrestige.classList.remove('active');
-            contentCards.style.display = 'flex';
-            contentPrestige.style.display = 'none';
-        });
+        const tabs = [tabCards, tabUpgrades];
+        const contents = [contentCards, contentUpgrades];
 
-        tabPrestige.addEventListener('click', () => {
-            tabPrestige.classList.add('active');
-            tabCards.classList.remove('active');
-            contentCards.style.display = 'none';
-            contentPrestige.style.display = 'flex';
-        });
+        const activate = (index) => {
+            tabs.forEach((t, i) => {
+                if(t) t.classList.toggle('active', i === index);
+            });
+            contents.forEach((c, i) => {
+                if(c) c.style.display = i === index ? 'flex' : 'none';
+            });
+        };
+
+        if(tabCards) tabCards.addEventListener('click', () => activate(0));
+        if(tabUpgrades) tabUpgrades.addEventListener('click', () => activate(1));
     }
 
-    render(cardTypes, currentMoney, prestigeLevels = [], currentPrestigeTier = 0) {
+    render(cardTypes, currentMoney, upgrades = [], currentUpgradeLevels = {}) {
         this.renderCards(cardTypes, currentMoney);
-        this.renderPrestige(prestigeLevels, currentPrestigeTier, currentMoney);
+        this.renderUpgrades(upgrades, currentUpgradeLevels, currentMoney);
     }
 
     renderCards(cardTypes, currentMoney) {
@@ -63,7 +64,7 @@ export class ShopView {
             const type = cardTypes[index];
             if (!type) return;
 
-            const canAfford = currentMoney >= type.baseCost;
+            const canAfford = currentMoney >= (type.currentCost || type.baseCost);
             const btn = item.querySelector('button');
             const earn = item.querySelector('.earn-display');
             
@@ -74,72 +75,59 @@ export class ShopView {
         });
     }
 
-    renderPrestige(levels, currentTier, currentMoney) {
-        if (!this.prestigeContainer) return;
+    renderUpgrades(upgradesData, currentLevels, currentMoney) {
+        if (!this.upgradesContainer) return;
         
-        if (this.prestigeContainer.children.length === 0) {
-             levels.forEach((level, index) => {
+        this.upgradesContainer.innerHTML = '';
+
+        // upgradesData is { arrow: [...], click: [...], ... }
+        Object.keys(upgradesData).forEach(key => {
+            const upgradesList = upgradesData[key];
+            const currentLevel = currentLevels[key] || 0;
+            const nextUpgrade = upgradesList.find(u => u.level === currentLevel + 1);
+
+            // We only show the NEXT upgrade. 
+            // If maxed, show maxed message (optional, or just hide).
+            // Let's show maxed message for completeness if they have at least 1 level
+            
+            if (nextUpgrade) {
                 const item = document.createElement('div');
-                item.classList.add('prestige-item');
+                item.className = 'upgrade-item';
+                const canAfford = currentMoney >= nextUpgrade.cost;
+
                 item.innerHTML = `
-                    <h4>${level.name} <span class="status-text"></span></h4>
-                    <div class="prestige-bonus">Multiplicador: x${level.multiplier.toLocaleString()}</div>
-                    <div class="prestige-cost-container"></div>
-                    <div class="action-container"></div>
+                    <div class="upgrade-header">
+                        <span class="upgrade-name">${nextUpgrade.name}</span>
+                        <div class="upgrade-meta">
+                            <span class="upgrade-type">${key.toUpperCase()}</span>
+                            <span class="upgrade-level">Nivel ${nextUpgrade.level}</span>
+                        </div>
+                    </div>
+                    <div class="upgrade-desc">${nextUpgrade.description}</div>
+                    <div class="upgrade-actions">
+                        <button class="shop-btn" ${canAfford ? '' : 'disabled'}>
+                            Comprar ($${nextUpgrade.cost.toLocaleString()})
+                        </button>
+                    </div>
                 `;
-                this.prestigeContainer.appendChild(item);
-            });
-             // Hard Reset
-            const resetDiv = document.createElement('div');
-            resetDiv.style.marginTop = '20px';
-            resetDiv.style.textAlign = 'center';
-            resetDiv.innerHTML = `<button class="btn warning small">Reiniciar Juego (Hard Reset)</button>`;
-            resetDiv.querySelector('button').addEventListener('click', () => this.onReset());
-            this.prestigeContainer.appendChild(resetDiv);
-        }
-        
-        // Update
-        const items = this.prestigeContainer.querySelectorAll('.prestige-item');
-        levels.forEach((level, index) => {
-            if (!items[index]) return;
-            const item = items[index];
-            
-            const isNext = index === currentTier + 1;
-            const isLocked = index > currentTier + 1;
-
-            item.className = 'prestige-item';
-            if (isLocked) item.classList.add('locked');
-            if (index === currentTier) item.style.borderColor = '#2ed573';
-            else item.style.borderColor = '#ffd700';
-
-            let statusText = '';
-            if (index === currentTier) statusText = '(Activo)';
-            else if (index < currentTier) statusText = '(Superado)';
-            else if (isNext) statusText = '(Siguiente Meta)';
-            else statusText = '(Bloqueado)';
-            
-            item.querySelector('.status-text').textContent = statusText;
-            
-            // Goal Logic
-            const costContainer = item.querySelector('.prestige-cost-container');
-            if (index > 0) {
-               costContainer.innerHTML = `<div class="prestige-cost">Meta: ${levels[index-1].targetMoney.toLocaleString(undefined, {notation:"compact"})}</div>`;
-            } else {
-               costContainer.innerHTML = '';
-            }
-
-            // Action
-            const actionContainer = item.querySelector('.action-container');
-            if (isNext) {
-                 if (!actionContainer.querySelector('button')) {
-                      const btn = document.createElement('button');
-                      btn.className = 'btn prestige-action';
-                      btn.textContent = 'ASCENDER';
-                      btn.addEventListener('click', () => this.onPrestige());
-                      actionContainer.appendChild(btn);
-                 }
-            } else {
-                actionContainer.innerHTML = '';
+                
+                item.querySelector('button').addEventListener('click', () => {
+                    if (canAfford) this.onBuyUpgrade(nextUpgrade);
+                });
+                
+                this.upgradesContainer.appendChild(item);
+            } else if (currentLevel >= upgradesList.length && upgradesList.length > 0) {
+                 // Max Level Reached for this category
+                 const item = document.createElement('div');
+                 item.className = 'upgrade-item maxed';
+                 item.innerHTML = `
+                    <div class="upgrade-header">
+                        <span class="upgrade-name">${upgradesList[upgradesList.length-1].name}</span>
+                        <span class="upgrade-level">MAX</span>
+                    </div>
+                    <div class="upgrade-desc">¡Mejora completada al máximo!</div>
+                 `;
+                 this.upgradesContainer.appendChild(item);
             }
         });
     }

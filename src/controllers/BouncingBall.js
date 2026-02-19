@@ -1,0 +1,194 @@
+export class BouncingBall {
+    constructor(gameController) {
+        this.game = gameController;
+        this.element = null;
+        
+        // Physics
+        this.x = window.innerWidth / 2;
+        this.y = window.innerHeight / 2;
+        this.vx = 1; // Normalized direction X
+        this.vy = 1; // Normalized direction Y
+        this.speed = 0; // Pixels per second
+        
+        // State
+        this.level = 0;
+        this.width = 40; // Approx visible size
+        this.height = 40;
+        
+        // Cooldown
+        this.cardCooldowns = new Map(); // id -> cooldown time remaining
+    }
+
+    init() {
+        if (this.element) return;
+        
+        this.element = document.createElement('div');
+        this.element.className = 'bouncing-ball';
+        // HTML entity for a ball, or just use CSS rounded dive
+        this.element.innerHTML = '●'; 
+        document.body.appendChild(this.element);
+        
+        // Randomize initial direction
+        this.randomizeDirection();
+    }
+
+    setLevel(levelData) {
+        if (!levelData) return;
+        
+        if (this.level === 0 && levelData.level > 0) {
+            this.init();
+        }
+        
+        this.level = levelData.level;
+        this.speed = levelData.speed;
+    }
+
+    setSize(size) {
+        this.width = size;
+        this.height = size;
+        if (this.element) {
+            this.element.style.width = size + 'px';
+            this.element.style.height = size + 'px';
+            this.element.style.fontSize = (size * 0.75) + 'px'; // Scale text/icon
+        }
+    }
+
+    update(dt) {
+        if (this.level === 0 || !this.element) return;
+
+        // Move
+        const moveDist = this.speed * dt;
+        this.x += this.vx * moveDist;
+        this.y += this.vy * moveDist;
+
+        // Bounce Logic (Window Edges)
+        let maxX = window.innerWidth - this.width;
+
+        // Check if shop is open
+        const shop = document.querySelector('.shop');
+        if (shop && shop.classList.contains('open')) {
+            // Shop is 300px wide + some padding/border maybe? 
+            // Let's assume 300px from right edge.
+            maxX = window.innerWidth - 300 - this.width;
+        }
+
+        const maxY = window.innerHeight - this.height;
+        let bounced = false;
+
+        if (this.x <= 0) {
+            this.x = 0;
+            this.vx = Math.abs(this.vx); // Force positive
+            this.randomizeBounce('x');
+            bounced = true;
+        } else if (this.x >= maxX) {
+            this.x = maxX;
+            this.vx = -Math.abs(this.vx); // Force negative
+            this.randomizeBounce('x');
+            bounced = true;
+        }
+
+        if (this.y <= 0) {
+            this.y = 0;
+            this.vy = Math.abs(this.vy); // Force positive
+            this.randomizeBounce('y');
+            bounced = true;
+        } else if (this.y >= maxY) {
+            this.y = maxY;
+            this.vy = -Math.abs(this.vy); // Force negative
+            this.randomizeBounce('y');
+            bounced = true;
+        }
+        
+        if (bounced) {
+             this.normalizeVelocity();
+        }
+
+        // Render Position
+        this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
+        
+        // Collision Detection
+        this.checkCollisions();
+        
+        // Cooldown management
+        for (const [id, time] of this.cardCooldowns) {
+            if (time > 0) {
+                this.cardCooldowns.set(id, time - dt);
+            } else {
+                this.cardCooldowns.delete(id);
+            }
+        }
+    }
+    
+    randomizeDirection() {
+        const angle = Math.random() * Math.PI * 2;
+        this.vx = Math.cos(angle);
+        this.vy = Math.sin(angle);
+    }
+
+    randomizeBounce(axis) {
+        // When bouncing off a wall, we want to scramble the OTHER axis speed slightly
+        // or just pick a completely new random angle that points INWARDS.
+        
+        // Let's try picking a random angle within the valid hemisphere.
+        // If hitting left wall (normal = +1, 0), angle should be -90 to +90 deg.
+        // Simpler approach:
+        // Keep the primary reflection (e.g. vx = -vx), but randomize the other component
+        // then normalize.
+        
+        if (axis === 'x') {
+            this.vy = (Math.random() * 2) - 1; // Random -1 to 1
+        } else {
+            this.vx = (Math.random() * 2) - 1; // Random -1 to 1
+        }
+    }
+    
+    normalizeVelocity() {
+        const len = Math.sqrt(this.vx*this.vx + this.vy*this.vy);
+        if (len === 0) {
+            this.vx = 1;
+            this.vy = 0;
+        } else {
+            this.vx /= len;
+            this.vy /= len;
+        }
+    }
+
+    checkCollisions() {
+        // Do NOT return early. Check ALL collisions.
+
+        const arrowRect = {
+            left: this.x,
+            right: this.x + this.width,
+            top: this.y,
+            bottom: this.y + this.height
+        };
+
+        for (const [id, view] of this.game.cardViews) {
+            // Check per-card cooldown
+            if (this.cardCooldowns.has(id)) continue;
+
+            const cardRect = view.element.getBoundingClientRect();
+            
+            if (this.isColliding(arrowRect, cardRect)) {
+                this.game.onCardClick(view.element, { 
+                    clientX: this.x + this.width/2, 
+                    clientY: this.y + this.height/2,
+                    preventDefault: () => {},
+                    isAutomated: true // Flag for Controller
+                });
+                
+                // Add to cooldown map (0.5s or so)
+                this.cardCooldowns.set(id, 0.5);
+                
+                // Do NOT return. Continue checking other cards in the stack.
+            }
+        }
+    }
+
+    isColliding(r1, r2) {
+        return !(r2.left > r1.right || 
+                 r2.right < r1.left || 
+                 r2.top > r1.bottom || 
+                 r2.bottom < r1.top);
+    }
+}
