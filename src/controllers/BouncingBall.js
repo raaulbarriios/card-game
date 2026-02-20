@@ -62,12 +62,6 @@ export class BouncingBall {
 
         // Bounce Logic (Window Edges)
         let maxX = window.innerWidth - this.width;
-
-        const shop = document.querySelector('.shop');
-        if (shop && shop.classList.contains('open')) {
-            maxX = window.innerWidth - 300 - this.width;
-        }
-
         const maxY = window.innerHeight - this.height;
         let bounced = false;
 

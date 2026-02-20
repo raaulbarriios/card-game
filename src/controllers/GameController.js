@@ -352,9 +352,11 @@ export class GameController {
 
     onDragEnd(e) {
         if (this.isDragging && this.draggedCardId) {
+            const isTouch = e.type.startsWith('touch');
             
-            // Only synthesize a click if the user actually dragged the card
-            if (this.hasMoved) {
+            // Only synthesize a click if the user actually dragged the card OR if it's a touch event
+            // (touch events suppress the native click due to e.preventDefault() in touchstart/move)
+            if (this.hasMoved || isTouch) {
                 const cardEl = document.querySelector(`.card[data-instance-id="${this.draggedCardId}"]`);
                 if (cardEl) {
                     const rect = cardEl.getBoundingClientRect();
@@ -368,13 +370,13 @@ export class GameController {
                     });
                 }
                 
-                // Delay clearing isDragging so the native click event (if fired) is ignored
+                // Delay clearing isDragging so the native click event (if any is fired contextually) is ignored
                 setTimeout(() => {
                     this.isDragging = false;
                     this.draggedCardId = null;
-                }, 0);
+                }, 50);
             } else {
-                // Was just a click without moving, let native click event handle it
+                // Was just a click without moving on a non-touch device, let native click event handle it
                 this.isDragging = false;
                 this.draggedCardId = null;
             }

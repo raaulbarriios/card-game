@@ -41,7 +41,7 @@ body {
   justify-content: space-between;
   padding: 0 20px;
   box-shadow: var(--shadow);
-  z-index: 10;
+  z-index: 150;
 }
 
 .hud-controls {
@@ -92,8 +92,18 @@ body {
   background-image: url('./src/img/mercarroña_papel_pixel.png');
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
+  image-rendering: pixelated; /* Keeps the pixel art style crisp */
   position: relative;
   overflow: hidden; /* Cards stay inside */
+}
+
+/* Make sure background scales reasonably on tall mobile screens without zooming in too much */
+@media (max-width: 768px) {
+  .board {
+    background-size: 100% auto;
+    background-repeat: repeat; 
+  }
 }
 
 /* Shop */
@@ -377,7 +387,7 @@ body {
     color: #008f4c; /* Green */
     text-shadow: 0 0 5px #a8ffb2, 0 0 10px #008f4c;
     pointer-events: none; /* Let clicks pass through */
-    z-index: 9999;
+    z-index: 90; /* Make it go under the shop (z-index 100) and HUD */
     will-change: transform;
     display: flex;
     align-items: center;
