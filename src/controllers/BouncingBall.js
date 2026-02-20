@@ -24,7 +24,6 @@ export class BouncingBall {
         
         this.element = document.createElement('div');
         this.element.className = 'bouncing-ball';
-        // HTML entity for a ball, or just use CSS rounded dive
         this.element.innerHTML = '●'; 
         document.body.appendChild(this.element);
         
@@ -64,11 +63,8 @@ export class BouncingBall {
         // Bounce Logic (Window Edges)
         let maxX = window.innerWidth - this.width;
 
-        // Check if shop is open
         const shop = document.querySelector('.shop');
         if (shop && shop.classList.contains('open')) {
-            // Shop is 300px wide + some padding/border maybe? 
-            // Let's assume 300px from right edge.
             maxX = window.innerWidth - 300 - this.width;
         }
 
@@ -126,19 +122,10 @@ export class BouncingBall {
     }
 
     randomizeBounce(axis) {
-        // When bouncing off a wall, we want to scramble the OTHER axis speed slightly
-        // or just pick a completely new random angle that points INWARDS.
-        
-        // Let's try picking a random angle within the valid hemisphere.
-        // If hitting left wall (normal = +1, 0), angle should be -90 to +90 deg.
-        // Simpler approach:
-        // Keep the primary reflection (e.g. vx = -vx), but randomize the other component
-        // then normalize.
-        
         if (axis === 'x') {
-            this.vy = (Math.random() * 2) - 1; // Random -1 to 1
+            this.vy = (Math.random() * 2) - 1;
         } else {
-            this.vx = (Math.random() * 2) - 1; // Random -1 to 1
+            this.vx = (Math.random() * 2) - 1;
         }
     }
     
@@ -154,8 +141,6 @@ export class BouncingBall {
     }
 
     checkCollisions() {
-        // Do NOT return early. Check ALL collisions.
-
         const arrowRect = {
             left: this.x,
             right: this.x + this.width,

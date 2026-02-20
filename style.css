@@ -1,13 +1,13 @@
 :root {
-  --bg-color: #1a1a2e;
-  --board-color: #16213e;
-  --accent-color: #0f3460;
-  --highlight-color: #e94560;
-  --text-color: #f1f1f1;
+  --bg-color: #8c6a41;
+  --board-color: #be9867;
+  --accent-color: #5c3a21;
+  --highlight-color: #008f4c;
+  --text-color: #fdf5e6;
   --card-bg: #fff;
-  --glass-bg: rgba(255, 255, 255, 0.1);
-  --glass-border: rgba(255, 255, 255, 0.2);
-  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --glass-bg: rgba(92, 58, 33, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.3);
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.4);
 }
 
 * {
@@ -89,10 +89,11 @@ body {
 /* Board */
 .board {
   background-color: var(--board-color);
+  background-image: url('./src/img/mercarroña_papel_pixel.png');
+  background-size: cover;
+  background-position: center;
   position: relative;
   overflow: hidden; /* Cards stay inside */
-  background-image: radial-gradient(var(--glass-border) 1px, transparent 1px);
-  background-size: 20px 20px;
 }
 
 /* Shop */
@@ -104,7 +105,7 @@ body {
   height: calc(100vh - 60px); /* Explicit height */
   max-height: calc(100vh - 60px); 
   width: 300px;
-  background: rgba(26, 26, 46, 0.95); /* Darker, less transparent for readability */
+  background: rgba(60, 35, 15, 0.95);
   backdrop-filter: blur(10px);
   border-left: 1px solid var(--glass-border);
   padding: 20px;
@@ -373,8 +374,8 @@ body {
     width: 40px;
     height: 40px;
     font-size: 30px;
-    color: #ffd700; /* Gold */
-    text-shadow: 0 0 5px orange, 0 0 10px red;
+    color: #008f4c; /* Green */
+    text-shadow: 0 0 5px #a8ffb2, 0 0 10px #008f4c;
     pointer-events: none; /* Let clicks pass through */
     z-index: 9999;
     will-change: transform;
@@ -383,8 +384,8 @@ body {
     justify-content: center;
     user-select: none;
     border-radius: 50%; /* Make it round */
-    background: radial-gradient(circle at 30% 30%, #fff, #ffd700); /* Shiny ball effect */
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+    background: radial-gradient(circle at 30% 30%, #fff, #008f4c); /* Shiny ball effect */
+    box-shadow: 0 0 10px rgba(0, 143, 76, 0.8);
 }
 
 /* Upgrade Item */

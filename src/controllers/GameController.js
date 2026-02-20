@@ -77,10 +77,6 @@ export class GameController {
         return upgrade ? upgrade.power : 1;
     }
 
-    get totalMultiplier() {
-        return 1; // Base
-    }
-
     getCardCount(typeId) {
         return this.cards.filter(c => c.typeId === typeId).length;
     }
@@ -263,8 +259,7 @@ export class GameController {
 
         const infoEl = view.element.querySelector('.card-info');
         if (infoEl) {
-            const rawVal = type.clickValue * (this.totalMultiplier);
-            infoEl.textContent = `+$${formatMoney(rawVal)}`;
+            infoEl.textContent = `+$${formatMoney(type.clickValue)}`;
         }
 
         this.boardEl.appendChild(view.element);
@@ -278,24 +273,7 @@ export class GameController {
 
         const type = this.cardTypes.find(t => t.id === cardModel.typeId);
         
-        // Add Money (Base * Multipliers)
-        // Check if this came from the ball (automated) or user (manual)?
-        // For now, let's apply click power to EVERYTHING or just manual?
-        // Usually, 'Click Power' implies manual.
-        // But BouncingBall uses this same method.
-        // Let's inspect event.
-        
-        let multiplier = this.totalMultiplier;
-
-        // If it's a manual click (real event with isTrusted, or we check a flag)
-        // BouncingBall passes a fake event object.
-        // Simple way: check event.isAutomated flag (we can pass it from ball)
-        
-        if (!event.isAutomated) {
-             multiplier *= this.clickMultiplier;
-        }
-
-        const earned = type.clickValue * multiplier;
+        const earned = type.clickValue * this.clickMultiplier;
         this.money += earned;
         this.renderUI();
 
@@ -303,7 +281,6 @@ export class GameController {
         FXView.spawnMoneyPopup(event.clientX, event.clientY, formatMoney(earned));
     }
 
-    // --- Drag Logic (Unchanged) ---
     // --- Drag Logic ---
 
     getEventPos(e) {
@@ -329,7 +306,9 @@ export class GameController {
         
         if (cardModel) {
             this.isDragging = true;
+            this.hasMoved = false;
             const pos = this.getEventPos(e);
+            this.dragStartPos = pos;
             
             // Calculate offset relative to the card's top-left
             const rect = cardEl.getBoundingClientRect();
@@ -341,6 +320,17 @@ export class GameController {
     onDragMove(e) {
         if (!this.isDragging || !this.draggedCardId) return;
         e.preventDefault(); // Prevent scrolling/selection
+        
+        const pos = this.getEventPos(e);
+        if (this.dragStartPos) {
+            const dx = pos.x - this.dragStartPos.x;
+            const dy = pos.y - this.dragStartPos.y;
+            if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+                this.hasMoved = true;
+            }
+        } else {
+            this.hasMoved = true;
+        }
         
         const cardView = this.cardViews.get(this.draggedCardId);
         if (cardView) {
@@ -363,28 +353,32 @@ export class GameController {
     onDragEnd(e) {
         if (this.isDragging && this.draggedCardId) {
             
-            // User requested: "when you stop dragging... give a click"
-            // We can trigger a manual click on the card where it was dropped.
-            const cardEl = document.querySelector(`.card[data-instance-id="${this.draggedCardId}"]`);
-            if (cardEl) {
-                // Synthesize a click event
-                // Use last known position or current mouse/touch position if available
-                // But e.clientX might be missing in touchend.
-                // We can use the card's position.
-                const rect = cardEl.getBoundingClientRect();
-                const centerX = rect.left + rect.width / 2;
-                const centerY = rect.top + rect.height / 2;
+            // Only synthesize a click if the user actually dragged the card
+            if (this.hasMoved) {
+                const cardEl = document.querySelector(`.card[data-instance-id="${this.draggedCardId}"]`);
+                if (cardEl) {
+                    const rect = cardEl.getBoundingClientRect();
+                    const centerX = rect.left + rect.width / 2;
+                    const centerY = rect.top + rect.height / 2;
 
-                this.onCardClick(cardEl, {
-                    clientX: centerX,
-                    clientY: centerY,
-                    isAutomated: false // Treat as manual click (or maybe automated to avoid exploit?)
-                    // User said "give a click", implying reward. Let's make it manual compliant.
-                });
+                    this.onCardClick(cardEl, {
+                        clientX: centerX,
+                        clientY: centerY,
+                        isAutomated: false
+                    });
+                }
+                
+                // Delay clearing isDragging so the native click event (if fired) is ignored
+                setTimeout(() => {
+                    this.isDragging = false;
+                    this.draggedCardId = null;
+                }, 0);
+            } else {
+                // Was just a click without moving, let native click event handle it
+                this.isDragging = false;
+                this.draggedCardId = null;
             }
 
-            this.isDragging = false;
-            this.draggedCardId = null;
             this.saveGame();
         }
     }
@@ -393,24 +387,19 @@ export class GameController {
 
     renderUI() {
         this.moneyEl.textContent = formatMoney(this.money);
-        // this.updatePrestigeUI(); // Removed
         
-        // Create a display-ready list for the shop
         const shopList = this.cardTypes.map(t => ({
             ...t,
             currentCost: this.getCardCost(t.id),
             displayCost: formatMoney(this.getCardCost(t.id)),
-            displayEarn: formatMoney(t.clickValue * this.totalMultiplier)
+            displayEarn: formatMoney(t.clickValue)
         }));
         
-        // Pass formatted prestige levels too (Removed)
-        // const prestigeDisplay = ...
-
         this.shopView.render(
             shopList, 
             this.money, 
-            this.upgradesData, // Upgrades Data Full Object
-            this.upgrades       // Current State
+            this.upgradesData,
+            this.upgrades
         );
     }
 }
