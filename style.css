@@ -14,7 +14,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  user-select: none; /* Prevent text selection during drag */
+  user-select: none; 
 }
 
 body {
@@ -32,7 +32,6 @@ body {
   height: 100%;
 }
 
-/* HUD */
 .hud-bar {
   grid-column: 1 / -1;
   background: var(--accent-color);
@@ -86,19 +85,18 @@ body {
   100% { box-shadow: 0 0 10px #ffd700; }
 }
 
-/* Board */
+
 .board {
   background-color: var(--board-color);
   background-image: url('./src/img/mercarroña_papel_pixel.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  image-rendering: pixelated; /* Keeps the pixel art style crisp */
+  image-rendering: pixelated;
   position: relative;
-  overflow: hidden; /* Cards stay inside */
+  overflow: hidden; 
 }
 
-/* Make sure background scales reasonably on tall mobile screens without zooming in too much */
 @media (max-width: 768px) {
   .board {
     background-size: 100% auto;
@@ -106,13 +104,13 @@ body {
   }
 }
 
-/* Shop */
+
 .shop {
   position: fixed;
-  top: 60px; /* Below HUD */
+  top: 60px; 
   right: 0;
   bottom: 0;
-  height: calc(100vh - 60px); /* Explicit height */
+  height: calc(100vh - 60px);
   max-height: calc(100vh - 60px); 
   width: 300px;
   background: rgba(60, 35, 15, 0.95);
@@ -122,8 +120,6 @@ body {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  /* overflow: visible is needed for the handle to stick out. 
-     We rely on shop-content to manage overflow of items. */
   overflow: visible; 
   transform: translateX(100%);
   transition: transform 0.3s ease-in-out;
@@ -138,7 +134,7 @@ body {
 .shop-handle {
   position: absolute;
   top: 50%;
-  left: -20px; /* Width of handle */
+  left: -20px;
   width: 20px;
   height: 100px;
   background: var(--accent-color);
@@ -159,7 +155,6 @@ body {
   background: var(--highlight-color);
 }
 
-/* Rotate arrow when open */
 .shop.open .shop-handle span {
   transform: rotate(180deg);
   display: inline-block;
@@ -175,7 +170,7 @@ body {
   flex-direction: column;
   flex: 1;
   min-height: 0;
-  overflow: hidden; /* Contain inner scroll */
+  overflow: hidden; 
 }
 
 .shop-content.active {
@@ -210,24 +205,24 @@ body {
   border-bottom: 2px solid var(--highlight-color);
 }
 
-/* Shop Slider (Vertical) */
+
 .shop-slider {
   display: flex;
-  flex-direction: column; /* Vertical */
+  flex-direction: column;
   overflow-y: auto;
   overflow-y: auto;
   gap: 15px;
-  padding-bottom: 50px; /* Extra padding for bottom visibility */
+  padding-bottom: 50px;
   scroll-behavior: smooth;
-  flex: 1; /* Grow to fill space */
-  min-height: 0; /* Crucial for scrolling inside flex */
-  overflow-x: hidden; /* Prevent horizontal scroll */
-  padding-right: 15px; /* Separate scrollbar from items */
+  flex: 1;
+  min-height: 0; 
+  overflow-x: hidden;
+  padding-right: 15px;
 }
 
-/* Custom Scrollbar for slider */
+
 .shop-slider::-webkit-scrollbar {
-  width: 8px; /* Width for vertical scrollbar */
+  width: 8px; 
 }
 .shop-slider::-webkit-scrollbar-track {
   background: rgba(0, 0, 0, 0.1);
@@ -238,7 +233,7 @@ body {
 }
 
 .shop-item {
-  width: 100%; /* Full width */
+  width: 100%; 
   flex-shrink: 0;
   background: rgba(0, 0, 0, 0.2);
   padding: 10px;
@@ -246,7 +241,7 @@ body {
   display: flex;
   align-items: center; 
   flex-direction: row; 
-  flex-wrap: wrap; /* Allow wrapping if needed */
+  flex-wrap: wrap; 
   justify-content: space-between;
   gap: 10px;
   border: 1px solid transparent;
@@ -262,8 +257,8 @@ body {
 }
 
 .shop-item > div {
-  flex: 1; /* Text takes remaining space */
-  min-width: 80px; /* Ensure text doesn't collapse too much */
+  flex: 1; 
+  min-width: 80px; 
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -280,9 +275,9 @@ body {
   width: 100%;
   background-color: var(--highlight-color);
   color: white;
-  padding: 6px 10px; /* Merged from previous rule */
+  padding: 6px 10px; 
   border: none;
-  border-radius: 4px; /* Default btn style */
+  border-radius: 4px;
   font-weight: bold;
   cursor: pointer;
   transition: transform 0.1s;
@@ -293,25 +288,20 @@ body {
   cursor: not-allowed;
 }
 
-/* Prestige List - REMOVED */
-
-
-/* Cards on Board */
 .card {
   width: 180px;
   height: 252px;
-  background-color: transparent; /* No background */
+  background-color: transparent; 
   border-radius: 12px;
   position: absolute;
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
   cursor: grab;
-  /* Remove flex layout that constrained padding */
   padding: 0;
   transition:
     transform 0.1s,
     box-shadow 0.1s;
   touch-action: none;
-  overflow: hidden; /* Ensure image clips */
+  overflow: hidden; 
 }
 
 .card:active {
@@ -322,18 +312,17 @@ body {
 
 .card img {
   width: 100%;
-  height: 100%; /* Fill card */
+  height: 100%;
   object-fit: cover;
-  border-radius: 12px; /* Match card */
-  pointer-events: none; /* Prevent image dragging interfering */
-  display: block; /* Remove inline gap */
+  border-radius: 12px;
+  pointer-events: none; 
+  display: block;
 }
 
 .card-info {
-  display: none; /* Only show image */
+  display: none; 
 }
 
-/* Animations */
 @keyframes pop-money {
   0% {
     transform: translateY(0) scale(1);
@@ -376,7 +365,7 @@ body {
   margin-top: 5px;
 }
 
-/* Bouncing Ball */
+
 .bouncing-ball {
     position: fixed;
     top: 0;
@@ -384,21 +373,20 @@ body {
     width: 40px;
     height: 40px;
     font-size: 30px;
-    color: #008f4c; /* Green */
+    color: #008f4c; 
     text-shadow: 0 0 5px #a8ffb2, 0 0 10px #008f4c;
-    pointer-events: none; /* Let clicks pass through */
-    z-index: 90; /* Make it go under the shop (z-index 100) and HUD */
+    pointer-events: none; 
+    z-index: 90; 
     will-change: transform;
     display: flex;
     align-items: center;
     justify-content: center;
     user-select: none;
-    border-radius: 50%; /* Make it round */
-    background: radial-gradient(circle at 30% 30%, #fff, #008f4c); /* Shiny ball effect */
+    border-radius: 50%; 
+    background: radial-gradient(circle at 30% 30%, #fff, #008f4c); 
     box-shadow: 0 0 10px rgba(0, 143, 76, 0.8);
 }
 
-/* Upgrade Item */
 .upgrade-item {
     background: rgba(0, 0, 0, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -440,7 +428,6 @@ body {
     justify-content: flex-end;
 }
 
-/* Permanent Reset Button */
 .reset-btn {
     position: fixed;
     top: 10px;
@@ -464,3 +451,69 @@ body {
     background: rgba(255, 0, 0, 0.8);
     transform: scale(1.1);
 }
+
+/* Settings Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: var(--bg-color);
+  padding: 30px;
+  border-radius: 10px;
+  border: 2px solid var(--accent-color);
+  width: 320px;
+  max-width: 90%;
+  position: relative;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  color: var(--text-color);
+}
+
+.modal-content h2 {
+  margin-bottom: 20px;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--text-color);
+  cursor: pointer;
+}
+
+.close-btn:hover {
+  color: #ff4757;
+}
+
+.setting-group {
+  margin-top: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.setting-group input[type="range"] {
+  width: 100%;
+  cursor: pointer;
+}
+
+.setting-group .btn {
+  width: 100%;
+  padding: 10px;
+  font-size: 1rem;
+}
+

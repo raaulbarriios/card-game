@@ -1,6 +1,3 @@
-/**
- * Manages the Shop UI.
- */
 export class ShopView {
     constructor(containerIds, onBuyCallback, onBuyUpgradeCallback) {
         this.cardsContainer = document.getElementById('shop-items');
@@ -39,7 +36,6 @@ export class ShopView {
     }
 
     renderCards(cardTypes, currentMoney) {
-        // Only build if empty
         if (this.cardsContainer.children.length === 0) {
              cardTypes.forEach(type => {
                 const item = document.createElement('div');
@@ -59,7 +55,6 @@ export class ShopView {
             });
         }
 
-        // Update existing items
         Array.from(this.cardsContainer.children).forEach((item, index) => {
             const type = cardTypes[index];
             if (!type) return;
@@ -68,7 +63,6 @@ export class ShopView {
             const btn = item.querySelector('button');
             const earn = item.querySelector('.earn-display');
             
-            // Update Text
             earn.textContent = `Genera: $${type.displayEarn || '?'}/clic`;
             btn.textContent = `Comprar ($${(type.displayCost || type.baseCost)})`;
             btn.disabled = !canAfford;
@@ -80,16 +74,11 @@ export class ShopView {
         
         this.upgradesContainer.innerHTML = '';
 
-        // upgradesData is { arrow: [...], click: [...], ... }
         Object.keys(upgradesData).forEach(key => {
             const upgradesList = upgradesData[key];
             const currentLevel = currentLevels[key] || 0;
             const nextUpgrade = upgradesList.find(u => u.level === currentLevel + 1);
 
-            // We only show the NEXT upgrade. 
-            // If maxed, show maxed message (optional, or just hide).
-            // Let's show maxed message for completeness if they have at least 1 level
-            
             if (nextUpgrade) {
                 const item = document.createElement('div');
                 item.className = 'upgrade-item';
@@ -117,7 +106,6 @@ export class ShopView {
                 
                 this.upgradesContainer.appendChild(item);
             } else if (currentLevel >= upgradesList.length && upgradesList.length > 0) {
-                 // Max Level Reached for this category
                  const item = document.createElement('div');
                  item.className = 'upgrade-item maxed';
                  item.innerHTML = `

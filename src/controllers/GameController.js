@@ -1,7 +1,6 @@
-import { GameDatabase } from '../database/GameDatabase.js';
+import { GameDatabase, CardTypes, Upgrades } from '../database/GameDatabase.js';
 import { CardView } from '../views/CardView.js';
 import { ShopView } from '../views/ShopView.js';
-import { CardTypes, Upgrades } from '../data/GameData.js';
 import { formatMoney } from '../utils/Formatter.js';
 import { FXView } from '../views/FXView.js';
 import { BouncingBall } from './BouncingBall.js';
@@ -25,6 +24,14 @@ export class GameController {
         this.boardEl = document.getElementById('game-board');
         this.shopEl = document.querySelector('.shop');
         this.shopHandle = document.getElementById('shop-handle');
+        this.bgMusic = document.getElementById('bg-music');
+        this.settingsBtn = document.getElementById('settings-btn');
+        this.settingsModal = document.getElementById('settings-modal');
+        this.closeSettingsBtn = document.getElementById('close-settings-btn');
+        this.musicVolume = document.getElementById('music-volume');
+        this.muteMusicBtn = document.getElementById('mute-music-btn');
+        this.hardResetBtn = document.getElementById('hard-reset-btn');
+        this.creditsBtn = document.getElementById('credits-btn');
 
         // Logic Helpers
         this.nextInstanceId = 1;
@@ -130,10 +137,70 @@ export class GameController {
             this.shopEl.classList.toggle('open');
         });
 
+        // Settings Modal
+        if (this.settingsBtn && this.settingsModal) {
+            this.settingsBtn.addEventListener('click', () => {
+                this.settingsModal.style.display = 'flex';
+            });
+        }
+        
+        if (this.closeSettingsBtn) {
+            this.closeSettingsBtn.addEventListener('click', () => {
+                this.settingsModal.style.display = 'none';
+            });
+        }
+
+        // Music Controls
+        if (this.bgMusic) {
+            let isMuted = false;
+            
+            // Try to play on first interaction if autoplay was blocked
+            const playOnInteraction = () => {
+                if (this.bgMusic.paused && !isMuted) {
+                    this.bgMusic.play().catch(() => {});
+                }
+                document.removeEventListener('click', playOnInteraction);
+                document.removeEventListener('touchstart', playOnInteraction);
+            };
+            document.addEventListener('click', playOnInteraction);
+            document.addEventListener('touchstart', playOnInteraction);
+
+            if (this.muteMusicBtn) {
+                this.muteMusicBtn.addEventListener('click', () => {
+                   if (this.bgMusic.paused && !isMuted) {
+                       this.bgMusic.play().catch(e => console.log('Audio error:', e));
+                   }
+
+                   isMuted = !isMuted;
+                   this.bgMusic.muted = isMuted;
+                   this.muteMusicBtn.textContent = isMuted ? 'Activar Música' : 'Silenciar Música';
+                   this.muteMusicBtn.style.opacity = isMuted ? '0.6' : '1';
+                });
+            }
+
+            if (this.musicVolume) {
+                this.musicVolume.addEventListener('input', (e) => {
+                    this.bgMusic.volume = e.target.value;
+                    if (this.bgMusic.paused && e.target.value > 0) {
+                        this.bgMusic.play().catch(err => console.log('Autoplay error', err));
+                    }
+                });
+            }
+        }
+
         // Hard Reset Button
-        const resetBtn = document.getElementById('hard-reset-btn');
-        if (resetBtn) {
-            resetBtn.addEventListener('click', () => this.attemptReset());
+        if (this.hardResetBtn) {
+            this.hardResetBtn.addEventListener('click', () => {
+                this.settingsModal.style.display = 'none'; // Close modal
+                this.attemptReset();
+            });
+        }
+
+        // Credits Placeholder
+        if (this.creditsBtn) {
+            this.creditsBtn.addEventListener('click', () => {
+                alert("Créditos\n\nDesarrollador: Raúl Barrios Fuentes \nArte: Antonio Francisco Suárez Torres \nMúsica: Santiago Aparicio Fernández");
+            });
         }
 
         // Save on unload

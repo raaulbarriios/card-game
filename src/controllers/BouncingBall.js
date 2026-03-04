@@ -3,20 +3,17 @@ export class BouncingBall {
         this.game = gameController;
         this.element = null;
         
-        // Physics
         this.x = window.innerWidth / 2;
         this.y = window.innerHeight / 2;
-        this.vx = 1; // Normalized direction X
-        this.vy = 1; // Normalized direction Y
-        this.speed = 0; // Pixels per second
+        this.vx = 1;
+        this.vy = 1; 
+        this.speed = 0;
         
-        // State
         this.level = 0;
-        this.width = 40; // Approx visible size
+        this.width = 40;
         this.height = 40;
         
-        // Cooldown
-        this.cardCooldowns = new Map(); // id -> cooldown time remaining
+        this.cardCooldowns = new Map(); 
     }
 
     init() {
@@ -27,7 +24,6 @@ export class BouncingBall {
         this.element.innerHTML = '●'; 
         document.body.appendChild(this.element);
         
-        // Randomize initial direction
         this.randomizeDirection();
     }
 
@@ -48,43 +44,41 @@ export class BouncingBall {
         if (this.element) {
             this.element.style.width = size + 'px';
             this.element.style.height = size + 'px';
-            this.element.style.fontSize = (size * 0.75) + 'px'; // Scale text/icon
+            this.element.style.fontSize = (size * 0.75) + 'px';
         }
     }
 
     update(dt) {
         if (this.level === 0 || !this.element) return;
 
-        // Move
         const moveDist = this.speed * dt;
         this.x += this.vx * moveDist;
         this.y += this.vy * moveDist;
 
-        // Bounce Logic (Window Edges)
         let maxX = window.innerWidth - this.width;
         const maxY = window.innerHeight - this.height;
         let bounced = false;
 
         if (this.x <= 0) {
             this.x = 0;
-            this.vx = Math.abs(this.vx); // Force positive
+            this.vx = Math.abs(this.vx);
             this.randomizeBounce('x');
             bounced = true;
         } else if (this.x >= maxX) {
             this.x = maxX;
-            this.vx = -Math.abs(this.vx); // Force negative
+            this.vx = -Math.abs(this.vx);
             this.randomizeBounce('x');
             bounced = true;
         }
 
         if (this.y <= 0) {
             this.y = 0;
-            this.vy = Math.abs(this.vy); // Force positive
+            this.vy = Math.abs(this.vy);
             this.randomizeBounce('y');
             bounced = true;
         } else if (this.y >= maxY) {
             this.y = maxY;
-            this.vy = -Math.abs(this.vy); // Force negative
+            this.vy = -Math.abs(this.vy);
             this.randomizeBounce('y');
             bounced = true;
         }
@@ -93,13 +87,10 @@ export class BouncingBall {
              this.normalizeVelocity();
         }
 
-        // Render Position
         this.element.style.transform = `translate(${this.x}px, ${this.y}px)`;
         
-        // Collision Detection
         this.checkCollisions();
         
-        // Cooldown management
         for (const [id, time] of this.cardCooldowns) {
             if (time > 0) {
                 this.cardCooldowns.set(id, time - dt);
@@ -143,7 +134,6 @@ export class BouncingBall {
         };
 
         for (const [id, view] of this.game.cardViews) {
-            // Check per-card cooldown
             if (this.cardCooldowns.has(id)) continue;
 
             const cardRect = view.element.getBoundingClientRect();
@@ -153,13 +143,10 @@ export class BouncingBall {
                     clientX: this.x + this.width/2, 
                     clientY: this.y + this.height/2,
                     preventDefault: () => {},
-                    isAutomated: true // Flag for Controller
+                    isAutomated: true
                 });
                 
-                // Add to cooldown map (0.5s or so)
                 this.cardCooldowns.set(id, 0.5);
-                
-                // Do NOT return. Continue checking other cards in the stack.
             }
         }
     }

@@ -1,11 +1,4 @@
-/**
- * Manages the DOM representation of a single card.
- */
 export class CardView {
-    /**
-     * @param {object} cardModel - The data object for this card instance
-     * @param {CardType} cardType - The type definition
-     */
     constructor(cardModel, cardType) {
         this.model = cardModel;
         this.type = cardType;
@@ -25,7 +18,6 @@ export class CardView {
             <div class="card-info">+$${this.type.clickValue}</div>
         `;
 
-        // Store reference to this view on the element for easy retrieval
         el.dataset.instanceId = this.model.instanceId;
         
         return el;
@@ -36,9 +28,6 @@ export class CardView {
         this.element.style.top = `${this.model.y}px`;
     }
 
-    /**
-     * Updates the image (e.g. after customization)
-     */
     updateImage(newSrc) {
         const img = this.element.querySelector('img');
         if (img) img.src = newSrc;

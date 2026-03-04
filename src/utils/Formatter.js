@@ -1,8 +1,3 @@
-/**
- * Formats large numbers with suffixes (k, M, B, etc.)
- * @param {number} num - The number to format
- * @returns {string} - The formatted string
- */
 export function formatMoney(num) {
     if (num < 1000) return Math.floor(num).toLocaleString();
     
