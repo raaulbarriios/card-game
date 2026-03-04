@@ -9,16 +9,15 @@ export class GameController {
     constructor() {
         this.db = new GameDatabase();
         
-        // Game State
+
         this.money = 0;
-        this.cards = []; // Array of { instanceId, typeId, x, y }
-        this.upgrades = { arrow: 0, click: 0, ballSize: 0 }; // Store upgrade levels
+        this.cards = []; 
+        this.upgrades = { ballSpeed: 0, click: 0, ballSize: 0 }; 
+        this.audioSettings = { volume: 1, muted: false };
         
-        // Card Definitions
         this.cardTypes = CardTypes;
         this.upgradesData = Upgrades;
 
-        // UI References
         this.moneyEl = document.getElementById('money-value');
         
         this.boardEl = document.getElementById('game-board');
@@ -33,23 +32,23 @@ export class GameController {
         this.hardResetBtn = document.getElementById('hard-reset-btn');
         this.creditsBtn = document.getElementById('credits-btn');
 
-        // Logic Helpers
         this.nextInstanceId = 1;
         this.draggedCardId = null;
         this.dragOffset = { x: 0, y: 0 };
         this.isResetting = false;
 
-        // Sub-Controllers
+        this.konamiString = '';
+        this.konamiTarget = 'ArrowUpArrowUpArrowDownArrowDownArrowLeftArrowRightArrowLeftArrowRightKeyBKeyAEnter';
+
         this.bouncingBall = new BouncingBall(this);
 
-        // Views
         this.shopView = new ShopView(
             null, 
             (type) => this.buyCard(type),
             (upgrade) => this.buyUpgrade(upgrade)
         );
         this.shopView.initTabs();
-        this.cardViews = new Map(); // instanceId -> CardView
+        this.cardViews = new Map();
 
         this.init();
     }
@@ -59,7 +58,6 @@ export class GameController {
         this.setupEventListeners();
         this.renderUI();
         
-        // Start Game Loop
         this.lastTime = performance.now();
         requestAnimationFrame((t) => this.gameLoop(t));
     }
@@ -73,13 +71,11 @@ export class GameController {
         requestAnimationFrame((t) => this.gameLoop(t));
     }
 
-    // --- Helpers ---
     
     get clickMultiplier() {
         const level = this.upgrades.click || 0;
         if (level === 0) return 1;
         
-        // Find the upgrade object for current level
         const upgrade = this.upgradesData.click.find(u => u.level === level);
         return upgrade ? upgrade.power : 1;
     }
@@ -92,15 +88,11 @@ export class GameController {
         const type = this.cardTypes.find(t => t.id === typeId);
         if (!type) return 0;
         const count = this.getCardCount(typeId);
-        // Cost Formula: Base * (1.15 ^ count)
-        // This ensures the game gets harder as you buy more of the same unit
         return type.baseCost * Math.pow(1.15, count);
     }
 
-    // --- Core ---
 
     setupEventListeners() {
-        // Global Drag & Drop (Mouse + Touch)
         window.addEventListener('mousedown', (e) => this.onDragStart(e));
         window.addEventListener('mousemove', (e) => this.onDragMove(e));
         window.addEventListener('mouseup', (e) => this.onDragEnd(e));
@@ -109,10 +101,27 @@ export class GameController {
         window.addEventListener('touchmove', (e) => this.onDragMove(e), { passive: false });
         window.addEventListener('touchend', (e) => this.onDragEnd(e));
 
-        // Cheat Key (º) - Set Money
         window.addEventListener('keydown', (e) => {
+
+            if (!['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) {
+                
+                let keyName = e.code;
+                console.log("Pressed code:", keyName);
+                this.konamiString += keyName;
+                
+
+                if (this.konamiString.length > 300) {
+                    this.konamiString = this.konamiString.slice(-150);
+                }
+                
+                if (this.konamiString.includes(this.konamiTarget)) {
+                    this.konamiString = '';
+                    window.open('https://www.youtube.com/watch?v=dQw4w9WgXcQ', '_blank');
+                }
+            }
+
             if (e.key === 'º') {
-                const input = prompt("TRUCO: Establecer cantidad de dinero:", this.money);
+                const input = prompt("Establecer cantidad de dinero:", this.money);
                 if (input !== null) {
                     const amount = parseFloat(input);
                     if (!isNaN(amount)) {
@@ -124,7 +133,6 @@ export class GameController {
             }
         });
 
-        // Click on board to detect card clicks (delegation)
         this.boardEl.addEventListener('click', (e) => {
             const cardEl = e.target.closest('.card');
             if (cardEl && !this.isDragging) {
@@ -132,12 +140,10 @@ export class GameController {
             }
         });
 
-        // Shop Toggle
         this.shopHandle.addEventListener('click', () => {
             this.shopEl.classList.toggle('open');
         });
 
-        // Settings Modal
         if (this.settingsBtn && this.settingsModal) {
             this.settingsBtn.addEventListener('click', () => {
                 this.settingsModal.style.display = 'flex';
@@ -150,13 +156,10 @@ export class GameController {
             });
         }
 
-        // Music Controls
         if (this.bgMusic) {
-            let isMuted = false;
             
-            // Try to play on first interaction if autoplay was blocked
             const playOnInteraction = () => {
-                if (this.bgMusic.paused && !isMuted) {
+                if (this.bgMusic.paused && !this.audioSettings.muted) {
                     this.bgMusic.play().catch(() => {});
                 }
                 document.removeEventListener('click', playOnInteraction);
@@ -167,48 +170,50 @@ export class GameController {
 
             if (this.muteMusicBtn) {
                 this.muteMusicBtn.addEventListener('click', () => {
-                   if (this.bgMusic.paused && !isMuted) {
+                   if (this.bgMusic.paused && !this.audioSettings.muted) {
                        this.bgMusic.play().catch(e => console.log('Audio error:', e));
                    }
 
-                   isMuted = !isMuted;
-                   this.bgMusic.muted = isMuted;
-                   this.muteMusicBtn.textContent = isMuted ? 'Activar Música' : 'Silenciar Música';
-                   this.muteMusicBtn.style.opacity = isMuted ? '0.6' : '1';
+                   this.audioSettings.muted = !this.audioSettings.muted;
+                   this.bgMusic.muted = this.audioSettings.muted;
+                   
+                   this.muteMusicBtn.textContent = this.audioSettings.muted ? 'Activar Música' : 'Silenciar Música';
+                   this.muteMusicBtn.style.opacity = this.audioSettings.muted ? '0.6' : '1';
+                   this.saveGame();
                 });
             }
 
             if (this.musicVolume) {
                 this.musicVolume.addEventListener('input', (e) => {
-                    this.bgMusic.volume = e.target.value;
-                    if (this.bgMusic.paused && e.target.value > 0) {
+                    this.audioSettings.volume = parseFloat(e.target.value);
+                    this.bgMusic.volume = this.audioSettings.volume;
+                    if (this.bgMusic.paused && this.audioSettings.volume > 0 && !this.audioSettings.muted) {
                         this.bgMusic.play().catch(err => console.log('Autoplay error', err));
                     }
+                    this.saveGame();
                 });
             }
         }
 
-        // Hard Reset Button
         if (this.hardResetBtn) {
             this.hardResetBtn.addEventListener('click', () => {
-                this.settingsModal.style.display = 'none'; // Close modal
+                this.settingsModal.style.display = 'none';
                 this.attemptReset();
             });
         }
 
-        // Credits Placeholder
+
         if (this.creditsBtn) {
             this.creditsBtn.addEventListener('click', () => {
                 alert("Créditos\n\nDesarrollador: Raúl Barrios Fuentes \nArte: Antonio Francisco Suárez Torres \nMúsica: Santiago Aparicio Fernández");
             });
         }
 
-        // Save on unload
         window.addEventListener('beforeunload', () => this.saveGame());
     }
 
     attemptReset() {
-         if(confirm('¿REINICIO TOTAL? Esto borrará todo tu progreso para siempre. ¿Estás seguro?')) {
+         if(confirm('¿Deseas reiniciar el juego? Esto borrará todo tu progreso. ¿Estás seguro?')) {
             this.isResetting = true;
             this.db.reset();
             location.reload();
@@ -221,18 +226,33 @@ export class GameController {
             this.money = saved.money || 0;
             this.cards = saved.cards || [];
             this.nextInstanceId = saved.nextInstanceId || 1;
-            this.upgrades = saved.upgrades || { arrow: 0, click: 0, ballSize: 0 };
+            this.upgrades = saved.upgrades || { ballSpeed: 0, click: 0, ballSize: 0 };
             
-            // Re-instantiate views (Necessary to SEE your saved cards)
+            if (saved.audioSettings) {
+                this.audioSettings = saved.audioSettings;
+            }
+            
             this.cards.forEach(cardModel => {
                 this.createCardView(cardModel);
             });
 
-            // Re-Apply Upgrades Logic
             this.reapplyUpgrades();
         }
         
-        // Ensure at least one card exists
+        if (this.bgMusic) {
+            this.bgMusic.volume = this.audioSettings.volume;
+            this.bgMusic.muted = this.audioSettings.muted;
+        }
+        
+        if (this.musicVolume) {
+            this.musicVolume.value = this.audioSettings.volume;
+        }
+        
+        if (this.muteMusicBtn) {
+            this.muteMusicBtn.textContent = this.audioSettings.muted ? 'Activar Música' : 'Silenciar Música';
+            this.muteMusicBtn.style.opacity = this.audioSettings.muted ? '0.6' : '1';
+        }
+        
         if (this.cards.length === 0) {
             this.addStarterCard();
         }
@@ -256,15 +276,15 @@ export class GameController {
             money: this.money,
             cards: this.cards,
             nextInstanceId: this.nextInstanceId,
-            upgrades: this.upgrades
+            upgrades: this.upgrades,
+            audioSettings: this.audioSettings
         };
         this.db.save(state);
     }
 
     reapplyUpgrades() {
-        // Arrow & Ball Size
-        if (this.upgrades.arrow > 0) {
-            const levelData = this.upgradesData.arrow.find(u => u.level === this.upgrades.arrow);
+        if (this.upgrades.ballSpeed > 0) {
+            const levelData = this.upgradesData.ballSpeed.find(u => u.level === this.upgrades.ballSpeed);
             this.bouncingBall.setLevel(levelData);
         }
         
@@ -289,7 +309,7 @@ export class GameController {
             this.cards.push(newCard);
             this.createCardView(newCard);
             this.renderUI();
-            this.saveGame(); // Auto-save
+            this.saveGame();
         }
     }
 
@@ -297,17 +317,13 @@ export class GameController {
         if (this.money >= upgrade.cost) {
             this.money -= upgrade.cost;
             
-            // Generic State Update
-            // upgrade.id should match the key in this.upgrades (e.g., 'arrow', 'click', 'ballSize')
             this.upgrades[upgrade.id] = upgrade.level;
             
-            // Apply Effects
-            if (upgrade.id === 'arrow') {
+            if (upgrade.id === 'ballSpeed') {
                 this.bouncingBall.setLevel(upgrade);
             } else if (upgrade.id === 'ballSize') {
                 this.bouncingBall.setSize(upgrade.size);
             }
-            // Click power is passive and checked via get clickMultiplier
 
             this.renderUI();
             this.saveGame();
@@ -318,11 +334,8 @@ export class GameController {
         const type = this.cardTypes.find(t => t.id === cardModel.typeId);
         if (!type) return;
 
-        // We can pass the FORMATTED value to the view if we want, or handle it there.
-        // For now, let's just pass raw and let view handle or updated logic.
         const view = new CardView(cardModel, type);
         
-        // Update info text
 
         const infoEl = view.element.querySelector('.card-info');
         if (infoEl) {
@@ -344,11 +357,9 @@ export class GameController {
         this.money += earned;
         this.renderUI();
 
-        // FX
         FXView.spawnMoneyPopup(event.clientX, event.clientY, formatMoney(earned));
     }
 
-    // --- Drag Logic ---
 
     getEventPos(e) {
         if (e.type.startsWith('touch')) {
@@ -361,7 +372,6 @@ export class GameController {
     onDragStart(e) {
         const cardEl = e.target.closest('.card');
         
-        // Prevent mouse emulation on touch ONLY if we hit a card
         if (e.type === 'touchstart' && cardEl) {
             e.preventDefault();
         }
@@ -377,7 +387,6 @@ export class GameController {
             const pos = this.getEventPos(e);
             this.dragStartPos = pos;
             
-            // Calculate offset relative to the card's top-left
             const rect = cardEl.getBoundingClientRect();
             this.dragOffset.x = pos.x - rect.left;
             this.dragOffset.y = pos.y - rect.top;
@@ -386,7 +395,7 @@ export class GameController {
 
     onDragMove(e) {
         if (!this.isDragging || !this.draggedCardId) return;
-        e.preventDefault(); // Prevent scrolling/selection
+        e.preventDefault();
         
         const pos = this.getEventPos(e);
         if (this.dragStartPos) {
@@ -407,7 +416,6 @@ export class GameController {
             let newX = pos.x - boardRect.left - this.dragOffset.x;
             let newY = pos.y - boardRect.top - this.dragOffset.y;
             
-            // Constraints (Card size approx 180x252)
             newX = Math.max(0, Math.min(newX, boardRect.width - 180)); 
             newY = Math.max(0, Math.min(newY, boardRect.height - 252)); 
             
@@ -421,8 +429,6 @@ export class GameController {
         if (this.isDragging && this.draggedCardId) {
             const isTouch = e.type.startsWith('touch');
             
-            // Only synthesize a click if the user actually dragged the card OR if it's a touch event
-            // (touch events suppress the native click due to e.preventDefault() in touchstart/move)
             if (this.hasMoved || isTouch) {
                 const cardEl = document.querySelector(`.card[data-instance-id="${this.draggedCardId}"]`);
                 if (cardEl) {
@@ -437,13 +443,11 @@ export class GameController {
                     });
                 }
                 
-                // Delay clearing isDragging so the native click event (if any is fired contextually) is ignored
                 setTimeout(() => {
                     this.isDragging = false;
                     this.draggedCardId = null;
                 }, 50);
             } else {
-                // Was just a click without moving on a non-touch device, let native click event handle it
                 this.isDragging = false;
                 this.draggedCardId = null;
             }
@@ -452,7 +456,6 @@ export class GameController {
         }
     }
 
-    // --- Render ---
 
     renderUI() {
         this.moneyEl.textContent = formatMoney(this.money);

@@ -126,7 +126,7 @@ export class BouncingBall {
     }
 
     checkCollisions() {
-        const arrowRect = {
+        const ballRect = {
             left: this.x,
             right: this.x + this.width,
             top: this.y,
@@ -138,7 +138,7 @@ export class BouncingBall {
 
             const cardRect = view.element.getBoundingClientRect();
             
-            if (this.isColliding(arrowRect, cardRect)) {
+            if (this.isColliding(ballRect, cardRect)) {
                 this.game.onCardClick(view.element, { 
                     clientX: this.x + this.width/2, 
                     clientY: this.y + this.height/2,

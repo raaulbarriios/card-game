@@ -28,14 +28,14 @@ export const CardTypes = [
     new CardType('source', 'The Source', 1*B*Y, 10*M*Y, 'https://placehold.co/100x140/rainbow/black?text=Source'),
 ];
 
-const ArrowUpgrades = [
-    { id: 'arrow', level: 1, name: "Bola Rebotadora", cost: 1000, speed: 200, description: "Desbloquea una bola que rebota y hace clic por ti." },
-    { id: 'arrow', level: 2, name: "Bola Veloz I", cost: 5000, speed: 300, description: "Aumenta la velocidad de la bola." },
-    { id: 'arrow', level: 3, name: "Bola Veloz II", cost: 25000, speed: 450, description: "¡Más rápido!" },
-    { id: 'arrow', level: 4, name: "Bola Sónica", cost: 100_000, speed: 700, description: "La bola se mueve a velocidades increíbles." },
-    { id: 'arrow', level: 5, name: "Bola Hiper", cost: 1_000_000, speed: 1200, description: "¡Casi no se puede ver!" },
-    { id: 'arrow', level: 6, name: "Bola Cuántica", cost: 50_000_000, speed: 2500, description: "Está en todas partes a la vez." },
-    { id: 'arrow', level: 7, name: "Bola Divina", cost: 10*B, speed: 5000, description: "Velocidad divina." }
+const BallSpeedUpgrades = [
+    { id: 'ballSpeed', level: 1, name: "Bola Rebotadora", cost: 1000, speed: 200, description: "Desbloquea una bola que rebota y hace clic por ti." },
+    { id: 'ballSpeed', level: 2, name: "Bola Veloz I", cost: 5000, speed: 300, description: "Aumenta la velocidad de la bola." },
+    { id: 'ballSpeed', level: 3, name: "Bola Veloz II", cost: 25000, speed: 450, description: "¡Más rápido!" },
+    { id: 'ballSpeed', level: 4, name: "Bola Sónica", cost: 100_000, speed: 700, description: "La bola se mueve a velocidades increíbles." },
+    { id: 'ballSpeed', level: 5, name: "Bola Hiper", cost: 1_000_000, speed: 1200, description: "¡Casi no se puede ver!" },
+    { id: 'ballSpeed', level: 6, name: "Bola Cuántica", cost: 50_000_000, speed: 2500, description: "Está en todas partes a la vez." },
+    { id: 'ballSpeed', level: 7, name: "Bola Divina", cost: 10*B, speed: 5000, description: "Velocidad divina." }
 ];
 
 const ClickUpgrades = [
@@ -54,11 +54,11 @@ const BallSizeUpgrades = [
 ];
 
 export const Upgrades = {
-    arrow: ArrowUpgrades,
+    ballSpeed: BallSpeedUpgrades,
     click: ClickUpgrades,
     ballSize: BallSizeUpgrades
 };
-export { ArrowUpgrades };
+export { BallSpeedUpgrades };
 
 export class GameDatabase {
     constructor() {

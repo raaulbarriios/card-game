@@ -88,7 +88,6 @@ export class ShopView {
                     <div class="upgrade-header">
                         <span class="upgrade-name">${nextUpgrade.name}</span>
                         <div class="upgrade-meta">
-                            <span class="upgrade-type">${key.toUpperCase()}</span>
                             <span class="upgrade-level">Nivel ${nextUpgrade.level}</span>
                         </div>
                     </div>
