@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Goy Clicker</title>
     <link rel="stylesheet" href="style.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
+    <link rel="icon" type="image/ico" href="./src/img/favicon.ico" />
   </head>
   <body>
     <div id="app">
@@ -67,6 +67,14 @@
         <div class="setting-group">
           <button id="credits-btn" class="btn">Créditos</button>
         </div>
+      </div>
+    </div>
+
+    <div id="win-modal" class="modal-overlay" style="display: none; z-index: 10000; flex-direction: column; text-align: center;">
+      <div class="modal-content" style="border-color: #ffd700; box-shadow: 0 0 50px #ffd700;">
+        <h2 style="color: #ffd700; font-size: 2.5rem; text-shadow: 0 0 10px #ffd700; margin-bottom: 20px;">¡Has Ganado!</h2>
+        <p style="font-size: 1.2rem; margin-bottom: 30px;">Has conseguido la ultima carta.<br><br>¡Muchas gracias por jugar!</p>
+        <button id="close-win-btn" class="btn prestige" style="font-size: 1.2rem; padding: 10px 20px;">Reiniciar Juego</button>
       </div>
     </div>
 

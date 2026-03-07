@@ -31,6 +31,8 @@ export class GameController {
         this.muteMusicBtn = document.getElementById('mute-music-btn');
         this.hardResetBtn = document.getElementById('hard-reset-btn');
         this.creditsBtn = document.getElementById('credits-btn');
+        this.winModal = document.getElementById('win-modal');
+        this.closeWinBtn = document.getElementById('close-win-btn');
 
         this.nextInstanceId = 1;
         this.draggedCardId = null;
@@ -209,6 +211,15 @@ export class GameController {
             });
         }
 
+        if (this.closeWinBtn) {
+            this.closeWinBtn.addEventListener('click', () => {
+                this.winModal.style.display = 'none';
+                this.isResetting = true;
+                this.db.reset();
+                location.reload();
+            });
+        }
+
         window.addEventListener('beforeunload', () => this.saveGame());
     }
 
@@ -310,6 +321,10 @@ export class GameController {
             this.createCardView(newCard);
             this.renderUI();
             this.saveGame();
+            
+            if (type.id === 'source' && this.winModal) {
+                this.winModal.style.display = 'flex';
+            }
         }
     }
 
